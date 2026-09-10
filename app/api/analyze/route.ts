@@ -40,7 +40,14 @@ async function allowed(request: Request) {
 
 export async function POST(request: Request) {
   const origin = request.headers.get("origin");
-  if ((origin && origin !== new URL(request.url).origin) || request.headers.get("sec-fetch-site") === "cross-site") return fail("Open SignalRoom directly to analyze evidence.", 403);
+  const runtimeEnv = env as unknown as Record<string, string | undefined>;
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const publicHost = runtimeEnv.RAILWAY_PUBLIC_DOMAIN || forwardedHost;
+  const trustedOrigins = new Set([
+    new URL(request.url).origin,
+    ...(publicHost ? [`https://${publicHost}`] : []),
+  ]);
+  if ((origin && !trustedOrigins.has(origin)) || request.headers.get("sec-fetch-site") === "cross-site") return fail("Open SignalRoom directly to analyze evidence.", 403);
   if (!request.headers.get("content-type")?.startsWith("application/json")) return fail("Send a JSON request.", 415);
   const declaredSize = Number(request.headers.get("content-length") || 0);
   if (declaredSize > 64_000) return fail("The evidence set is too large for one analysis.", 413);
