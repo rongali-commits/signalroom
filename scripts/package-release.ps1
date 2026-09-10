@@ -12,9 +12,9 @@ New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
 
 $excludedDirectories = @(
   ".git", "node_modules", "dist", ".next", ".vinext", ".wrangler",
-  ".railway", ".sites-runtime", "release-output", "buyer-assets"
+  ".railway", ".sites-runtime", "release-output", "buyer-assets", ".marketing-tools"
 )
-$excludedFiles = @(".dev.vars")
+$excludedFiles = @(".dev.vars", "*.tsbuildinfo")
 
 & robocopy $projectRoot $packageRoot /E /NFL /NDL /NJH /NJS /NP /XD $excludedDirectories /XF $excludedFiles | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "Could not stage the SignalRoom release package." }
