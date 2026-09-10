@@ -15,7 +15,7 @@ if (!key) {
   process.exit(1);
 }
 
-const port = process.env.PORT || "3000";
+const port = process.env.PORT || "8080";
 const dataDirectory = resolve(process.env.SIGNALROOM_DATA_DIR || ".railway/state");
 const wrangler = resolve("node_modules/wrangler/bin/wrangler.js");
 const config = resolve("wrangler.railway.jsonc");

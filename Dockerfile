@@ -11,6 +11,6 @@ RUN npm run build
 ENV NODE_ENV=production
 ENV SIGNALROOM_DATA_DIR=/data
 
-EXPOSE 3000
+EXPOSE 8080
 
 CMD ["node", "scripts/start-railway.mjs"]

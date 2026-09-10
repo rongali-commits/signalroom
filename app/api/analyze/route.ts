@@ -75,11 +75,17 @@ export async function POST(request: Request) {
         ],
       }),
     });
-    if (!response.ok) return fail("The analysis provider could not complete this request.", 502);
+    if (!response.ok) {
+      console.error("[SignalRoom] DeepSeek returned a non-success response", response.status);
+      return fail("The analysis provider could not complete this request.", 502);
+    }
     const result = await response.json() as { choices?: Array<{ message?: { content?: string } }> };
     const answer = result.choices?.[0]?.message?.content?.trim().replace(/\u2014/g, ", ");
     if (!answer) return fail("No grounded answer was returned.", 502);
     return new Response(JSON.stringify({ answer }), { status: 200, headers: jsonHeaders });
-  } catch { return fail("The analysis did not finish. Please try again.", 502); }
+  } catch (error) {
+    console.error("[SignalRoom] DeepSeek request failed", error instanceof Error ? error.message : String(error));
+    return fail("The analysis did not finish. Please try again.", 502);
+  }
   finally { clearTimeout(timeout); }
 }
