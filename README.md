@@ -2,6 +2,8 @@
 
 SignalRoom is an evidence-first customer research and product intelligence workspace for SaaS teams and agencies. It turns interviews, support conversations, surveys, and reviews into traceable themes, prioritized opportunities, and shareable decision briefs.
 
+The repository is buyer-ready and includes a Railway deployment path, a single-project commercial licence, and implementation documentation. Start with `BUYER-GUIDE.md`.
+
 ## Product principles
 
 - Every AI statement should be traceable to customer evidence.
@@ -61,3 +63,7 @@ Run these checks before release:
 - Check navigation, import, analysis, theme selection, and responsive layouts.
 
 See `docs/ARCHITECTURE.md` and `docs/AI-SAFETY.md` for implementation and safety decisions.
+
+## Commercial use
+
+Commercial use is governed by `LICENSE-COMMERCIAL.md`. The source kit is licensed for one business, product, or end-client deployment per purchase. Redistribution as a template or competing source-code product is not included.

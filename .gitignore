@@ -39,9 +39,11 @@ yarn-error.log*
 next-env.d.ts
 /dist/
 /.wrangler/
+/.railway/
 /.sites-runtime/
 /.agents/
 /.codex/
 /outputs/
 /work/
+/release-output/
 *.tsbuildinfo

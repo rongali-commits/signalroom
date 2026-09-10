@@ -1,0 +1,14 @@
+.git
+.next
+.vinext
+.wrangler
+.railway
+dist
+node_modules
+.dev.vars
+.env
+.env.*
+*.log
+*.tar.gz
+*.zip
+tsconfig.tsbuildinfo

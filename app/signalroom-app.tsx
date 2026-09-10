@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
   ArrowUpRight, BarChart3, Bell, BrainCircuit, Check, ChevronDown,
   ChevronRight, CircleUserRound, FileText, Filter, Inbox,
@@ -54,6 +54,24 @@ function parseCsvLine(line: string) {
   return cells;
 }
 
+function InlineAnalysis({ text }: { text: string }) {
+  return <>{text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, index) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>
+      : <Fragment key={`${part}-${index}`}>{part}</Fragment>,
+  )}</>;
+}
+
+function AnalysisAnswer({ text }: { text: string }) {
+  return <div className="analysis-copy">{text.trim().split(/\n{2,}/).map((block, index) => {
+    const lines = block.split("\n").map((line) => line.trim()).filter(Boolean);
+    const heading = lines[0]?.match(/^#{1,3}\s+(.+)$/);
+    if (heading) return <section key={`${heading[1]}-${index}`}><h3>{heading[1]}</h3>{lines.slice(1).map((line, lineIndex) => <p key={`${line}-${lineIndex}`}><InlineAnalysis text={line.replace(/^[-*]\s+/, "")} /></p>)}</section>;
+    if (lines.length && lines.every((line) => /^[-*]\s+/.test(line))) return <ul key={`list-${index}`}>{lines.map((line, lineIndex) => <li key={`${line}-${lineIndex}`}><InlineAnalysis text={line.replace(/^[-*]\s+/, "")} /></li>)}</ul>;
+    return <p key={`paragraph-${index}`}>{lines.map((line, lineIndex) => <Fragment key={`${line}-${lineIndex}`}><InlineAnalysis text={line} />{lineIndex < lines.length - 1 && <br />}</Fragment>)}</p>;
+  })}</div>;
+}
+
 export function SignalRoomApp() {
   const [selected, setSelected] = useState(themes[0]);
   const [query, setQuery] = useState("");
@@ -105,10 +123,14 @@ export function SignalRoomApp() {
     if (!file) return;
     if (file.size > 500_000) { toast.error("Choose a CSV under 500 KB."); return; }
     const text = await file.text();
-    const rows = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean).slice(1, 51);
-    const imported = rows.map((row, index) => {
+    const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const expectedHeader = ["quote", "person", "company", "source", "segment"];
+    const actualHeader = parseCsvLine(lines[0] || "").map((cell) => cell.toLowerCase());
+    if (actualHeader.join(",") !== expectedHeader.join(",")) { toast.error("Use the required CSV header shown below."); return; }
+    const rows = lines.slice(1, 51);
+    const imported = rows.map((row) => {
       const [quote = "", person = "Imported customer", company = "Unknown company", source = "CSV import", segment = "Unassigned"] = parseCsvLine(row);
-      return { quote: quote || `Imported evidence ${index + 1}`, person, company, source, segment };
+      return { quote, person, company, source, segment };
     }).filter((item) => item.quote);
     if (!imported.length) { toast.error("No evidence rows were found."); return; }
     setEvidenceItems((current) => [...imported, ...current]);
@@ -151,7 +173,7 @@ export function SignalRoomApp() {
             <div className="breadcrumb"><span>Research</span><ChevronRight /><strong>{activeView}</strong></div>
             <div className="topbar-actions">
               <Button variant="outline" size="sm" className="import-button" onClick={() => setImportOpen(true)}><Upload /> Import evidence</Button>
-              <Button size="sm" onClick={() => setImportOpen(true)}><Plus /> New study</Button>
+              <Button size="sm" onClick={() => setAskOpen(true)}><Plus /> New analysis</Button>
               <Button variant="ghost" size="icon" aria-label="Notifications" onClick={() => toast.success("You are caught up.")}><Bell /></Button>
               <Button variant="ghost" size="icon" aria-label="Account" onClick={() => toast.info("Northstar workspace · Product lead")}><CircleUserRound /></Button>
             </div>
@@ -196,7 +218,7 @@ export function SignalRoomApp() {
                 <h2>{selected.name}</h2><p className="insight-summary">{selected.summary}</p>
                 <div className="confidence-row"><span>Evidence confidence</span><strong>{selected.signal}%</strong></div><Progress value={selected.signal} className="confidence-progress" />
                 <blockquote><MessageSquareText /><p>“{evidenceItems[0].quote}”</p><footer>{evidenceItems[0].person}, {evidenceItems[0].company}</footer></blockquote>
-                <div className="insight-actions"><Button className="flex-1" onClick={() => document.getElementById("evidence-repository")?.scrollIntoView({ behavior: "smooth" })}>Review evidence <ArrowUpRight /></Button><Button variant="outline" size="icon" aria-label="Mark insight reviewed" onClick={() => setReviewed((current) => current.includes(selected.id) ? current.filter((id) => id !== selected.id) : [...current, selected.id])}><Check className={reviewed.includes(selected.id) ? "reviewed-check" : ""} /></Button></div>
+                <div className="insight-actions"><Button className="flex-1" onClick={() => document.getElementById("evidence-repository")?.scrollIntoView({ behavior: "smooth" })}>Review evidence <ArrowUpRight /></Button><Button variant="outline" size="icon" aria-label={reviewed.includes(selected.id) ? "Mark insight unreviewed" : "Mark insight reviewed"} aria-pressed={reviewed.includes(selected.id)} onClick={() => setReviewed((current) => current.includes(selected.id) ? current.filter((id) => id !== selected.id) : [...current, selected.id])}><Check className={reviewed.includes(selected.id) ? "reviewed-check" : ""} /></Button></div>
               </aside>
             </div>
 
@@ -226,7 +248,7 @@ export function SignalRoomApp() {
         <DialogContent className="ask-dialog">
           <DialogHeader><DialogTitle>Ask the evidence</DialogTitle><DialogDescription>SignalRoom answers from the customer evidence in this workspace and identifies the supporting sources.</DialogDescription></DialogHeader>
           <Textarea rows={4} maxLength={600} value={question} onChange={(event) => setQuestion(event.target.value)} />
-          {answer && <div className="ai-answer"><p className="eyebrow">Evidence-backed answer</p><div>{answer}</div></div>}
+          {answer && <div className="ai-answer" aria-live="polite"><p className="eyebrow">Evidence-backed answer</p><AnalysisAnswer text={answer} /></div>}
           <DialogFooter><Button variant="outline" onClick={() => setAskOpen(false)}>Close</Button><Button onClick={() => void analyzeEvidence()} disabled={asking || !question.trim()}>{asking ? <LoaderCircle className="animate-spin" /> : <Send />} Analyze evidence</Button></DialogFooter>
         </DialogContent>
       </Dialog>
@@ -241,7 +263,7 @@ function Metric({ label, value, detail, accent }: { label: string; value: string
 
 function SecondaryWorkspace({ view, evidenceItems, onAsk, onImport }: { view: Exclude<ViewName, "Overview">; evidenceItems: typeof initialEvidence; onAsk: () => void; onImport: () => void }) {
   const [repositoryQuery, setRepositoryQuery] = useState("");
-  const repositoryEvidence = [...evidenceItems, ...initialEvidence].filter((item) => Object.values(item).some((value) => value.toLowerCase().includes(repositoryQuery.toLowerCase()))).slice(0, 8);
+  const repositoryEvidence = evidenceItems.filter((item) => Object.values(item).some((value) => value.toLowerCase().includes(repositoryQuery.toLowerCase()))).slice(0, 8);
   if (view === "Evidence") return (
     <>
       <WorkspaceHeading eyebrow="Evidence repository" title="Every insight starts with a source." copy="Search, segment, and review the customer language behind every product decision." action="Import evidence" onAction={onImport} />
@@ -268,7 +290,7 @@ function SecondaryWorkspace({ view, evidenceItems, onAsk, onImport }: { view: Ex
         <div className="theme-board-chart">
           <div className="chart-axis"><span>Signal strength</span><span>100</span></div>
           <div className="bubble-field" aria-label="Theme signal map">
-            {themes.map((theme, index) => <button key={theme.id} className={`signal-bubble bubble-${index + 1}`} style={{ width: `${theme.signal * .9}px`, height: `${theme.signal * .9}px` }}><strong>{theme.signal}</strong><span>{theme.name}</span></button>)}
+            {themes.map((theme, index) => <button key={theme.id} aria-label={`Open ${theme.name} theme, signal ${theme.signal}`} onClick={() => toast.info(`${theme.name} has ${theme.mentions} supporting mentions.`)} className={`signal-bubble bubble-${index + 1}`} style={{ width: `${theme.signal * .9}px`, height: `${theme.signal * .9}px` }}><strong>{theme.signal}</strong><span>{theme.name}</span></button>)}
           </div>
         </div>
         <div className="theme-board-list">{themes.map((theme, index) => <article key={theme.id}><span className="theme-rank">0{index + 1}</span><div><strong>{theme.name}</strong><small>{theme.summary}</small></div><Badge variant="outline">{theme.mentions} mentions</Badge></article>)}</div>
