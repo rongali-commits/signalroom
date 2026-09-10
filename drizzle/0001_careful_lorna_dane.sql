@@ -1,0 +1,1 @@
+CREATE INDEX `idx_usage_limits_expires_at` ON `usage_limits` (`expires_at`);

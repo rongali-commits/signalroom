@@ -1,0 +1,3 @@
+# Local secrets only. Never commit the populated .dev.vars file.
+DEEPSEEK_API_KEY=
+DEEPSEEK_MODEL=deepseek-v4-flash
