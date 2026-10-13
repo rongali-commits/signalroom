@@ -2,7 +2,7 @@
 
 [![Checks](https://github.com/rongali-commits/signalroom/actions/workflows/ci.yml/badge.svg)](https://github.com/rongali-commits/signalroom/actions/workflows/ci.yml)
 
-[Case study](https://noerong.com/projects/signalroom) Ã‚Â· [Live demo](https://signalroom-production-cda7.up.railway.app) Ã‚Â· [Contact](https://noerong.com/contact) Ã‚Â· [Checks](https://github.com/rongali-commits/signalroom/actions)
+[Case study](https://noerong.com/projects/signalroom) · [Live demo](https://signalroom-production-cda7.up.railway.app) · [Contact](https://noerong.com/contact) · [Checks](https://github.com/rongali-commits/signalroom/actions)
 
 ![SignalRoom research workspace with sample customer evidence](marketing/signalroom-cover-1600x1200.png)
 
