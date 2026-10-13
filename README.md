@@ -1,5 +1,11 @@
 # SignalRoom
 
+[![Checks](https://github.com/rongali-commits/signalroom/actions/workflows/ci.yml/badge.svg)](https://github.com/rongali-commits/signalroom/actions/workflows/ci.yml)
+
+[Case study](https://noerong.com/projects/signalroom) Ã‚Â· [Live demo](https://signalroom-production-cda7.up.railway.app) Ã‚Â· [Contact](https://noerong.com/contact) Ã‚Â· [Checks](https://github.com/rongali-commits/signalroom/actions)
+
+![SignalRoom research workspace with sample customer evidence](marketing/signalroom-cover-1600x1200.png)
+
 SignalRoom is an evidence-first customer research and product intelligence workspace for SaaS teams and agencies. It turns interviews, support conversations, surveys, and reviews into traceable themes, prioritized opportunities, and shareable decision briefs.
 
 The repository is buyer-ready and includes a Railway deployment path, a single-project commercial licence, and implementation documentation. Start with `BUYER-GUIDE.md`.
@@ -27,12 +33,12 @@ The repository is buyer-ready and includes a Railway deployment path, a single-p
 
 ## Local development
 
-Requirements: Node.js 22.13 or newer.
+Requirements: Node.js 24; CI uses the same runtime.
 
 1. Install the locked dependencies with `npm run install:ci`.
 2. Copy `.dev.vars.example` to `.dev.vars` and add a funded DeepSeek API key.
 3. Generate migrations with `npm run db:generate` after schema changes.
-4. Build once, then apply pending migrations using the commands documented in the Sites starter guidance.
+4. For the production-style local runtime, run `npm run build` then `npm run start:railway`. The start script applies `drizzle` migrations to the local rate-limit database before serving; `PORT` defaults to 8080.
 5. Start the workspace with `npm run dev`.
 
 ## Environment variables
@@ -58,6 +64,7 @@ Run these checks before release:
 
 - `npx tsc --noEmit`
 - `npm run lint`
+- `npm test` (isolated API tests; no live provider calls or secrets required)
 - `npm run build`
 - Verify valid, insufficient-evidence, prompt-injection, cross-origin, oversized-request, provider-error, and rate-limit behavior.
 - Check navigation, import, analysis, theme selection, and responsive layouts.
