@@ -1,8 +1,16 @@
-# Security notes
+# Security policy
+
+## Supported versions
+
+Security fixes are applied to the current `main` branch and the latest production deployment.
 
 ## Reporting
 
-Report a suspected vulnerability privately to `hello@noerong.com`. Do not include production API keys or customer evidence in the first message.
+Use GitHub's **Security** tab to report a vulnerability privately. If private vulnerability reporting is unavailable, email `hello@noerong.com`.
+
+Include the affected component, impact, reproduction steps, and any suggested mitigation. Do not open a public issue for an undisclosed vulnerability, and do not include production API keys or customer evidence in the first message.
+
+We aim to acknowledge reports within three business days and will coordinate validation, remediation, and disclosure with the reporter.
 
 ## Deployment rules
 
